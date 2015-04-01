@@ -5,6 +5,10 @@ module Main (
 import Types
 import Network.Types
 import Network.Writer
+
+import Network.Socket
+import System.IO
+
 import Common.Writer
 import Common.Types
 import qualified Data.ByteString.Lazy as BL
@@ -67,7 +71,13 @@ packRequest iM =
 
 
 main = do
-    print $ packRequest $ InputMessage (C.pack "myclient") (C.pack "mytopic") (fromIntegral 1) (C.pack "my message")
+    sock <- socket AF_INET Stream defaultProtocol 
+    setSocketOption sock ReuseAddr 1
+    connect sock (SockAddrInet 4343 iNADDR_ANY)
+    hdl <- socketToHandle sock WriteMode --TODO: Without Handle
+    let req = packRequest $ InputMessage (C.pack "client") (C.pack "mytopic") (fromIntegral 1) (C.pack "my message")
+    print req
+    writeRequest hdl $ req  
     return()
 --open connection
 --get arguments
