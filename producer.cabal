@@ -30,6 +30,8 @@ executable producer
   -- other-extensions:    
   build-depends:
     base >=4.6 && <4.7,
+    binary >=0.5 && <0.6,
+    bytestring >=0.10 && <0.11,
     broker -any
   hs-source-dirs:      src
   default-language:    Haskell2010
