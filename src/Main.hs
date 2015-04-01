@@ -36,7 +36,7 @@ packRequest iM =
   let partition = Partition {
       partitionNumber = inputPartitionNumber iM
     , messageSetSize = fromIntegral $ BL.length $ buildMessageSet messageSet
-    , messageSet = messageSet
+    , messageSet = [messageSet]
   }
   in
   let topic = Topic {
