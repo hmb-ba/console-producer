@@ -74,11 +74,9 @@ main = do
     sock <- socket AF_INET Stream defaultProtocol 
     setSocketOption sock ReuseAddr 1
     connect sock (SockAddrInet 4343 iNADDR_ANY)
-    hdl <- socketToHandle sock WriteMode --TODO: Without Handle
     let req = packRequest $ InputMessage (C.pack "client") (C.pack "mytopic") (fromIntegral 1) (C.pack "my message")
-    print req
-    writeRequest hdl $ req  
-    return()
+    writeRequest sock $ req  
+    --return()
 --open connection
 --get arguments
 --transform to requestmessage
