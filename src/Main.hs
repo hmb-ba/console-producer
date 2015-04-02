@@ -75,8 +75,13 @@ packRequest iM =
 main = do
   sock <- socket AF_INET Stream defaultProtocol 
   setSocketOption sock ReuseAddr 1
-  let ip = toHostAddress (read "127.0.0.1" :: IPv4)
-  connect sock (SockAddrInet 4343 ip)
+  putStrLn "IP eingeben"
+  ipInput <- getLine
+  let ip = toHostAddress (read ipInput :: IPv4)
+  putStrLn "Port eingeben"
+  portInput <- getLine
+  let port = read portInput :: Int -- todo
+  connect sock (SockAddrInet 9092 ip)
   putStrLn "ClientId eingeben"
   clientId <- getLine
   putStrLn "TopicName eingeben"
