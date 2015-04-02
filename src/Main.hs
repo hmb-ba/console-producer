@@ -8,6 +8,8 @@ import Network.Writer
 
 import Network.Socket
 import System.IO
+import Control.Monad
+import Data.IP
 
 import Common.Writer
 import Common.Types
@@ -71,12 +73,22 @@ packRequest iM =
 
 
 main = do
-    sock <- socket AF_INET Stream defaultProtocol 
-    setSocketOption sock ReuseAddr 1
-    connect sock (SockAddrInet 4343 iNADDR_ANY)
-    let req = packRequest $ InputMessage (C.pack "client") (C.pack "mytopic") (fromIntegral 1) (C.pack "my message")
-    writeRequest sock $ req  
-    --return()
+  sock <- socket AF_INET Stream defaultProtocol 
+  setSocketOption sock ReuseAddr 1
+  let ip = toHostAddress (read "127.0.0.1" :: IPv4)
+  connect sock (SockAddrInet 4343 ip)
+  putStrLn "ClientId eingeben"
+  clientId <- getLine
+  putStrLn "TopicName eingeben"
+  topicName <- getLine
+  forever $ do 
+    putStrLn "Nachricht eingeben"
+    inputMessage <- getLine
+    print "a"
+    let req = packRequest $ InputMessage (C.pack clientId) (C.pack topicName) (fromIntegral 1) (C.pack inputMessage)
+    writeRequest sock req
+    print "b"
+  --return()
 --open connection
 --get arguments
 --transform to requestmessage
