@@ -2,7 +2,7 @@ module Types (
   InputMessage(..)
 ) where
 
-import Network.Types.Request
+import HMB.Network
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BL
 

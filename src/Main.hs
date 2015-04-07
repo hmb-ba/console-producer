@@ -3,19 +3,17 @@ module Main (
 ) where
 
 import Types
-import Network.Types.Request
-import Network.Writer.Request
+import HMB.Network
+import HMB.Network.Writer.Request
+import HMB.Common
 
 import Network.Socket
 import System.IO
 import Control.Monad
 import Data.IP
-
-import Common.Writer
-import Common.Types
-import qualified Data.ByteString.Lazy as BL
-import qualified Data.ByteString as BS 
 import Data.Binary.Put
+import qualified Data.ByteString.Lazy as BL
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as C
 
 packRequest :: InputMessage -> RequestMessage
@@ -53,19 +51,19 @@ packRequest iM =
   }
   in
   let request = ProduceRequest {
-      requiredAcks = 0
-    , timeout = 1500
-    , numTopics = fromIntegral $ length [topic]
-    , topics = [topic]
+      reqRequiredAcks = 0
+    , reqTimeout = 1500
+    , reqNumTopics = fromIntegral $ length [topic]
+    , reqTopics = [topic]
   }
   in
   let requestMessage = RequestMessage {
-      requestSize = fromIntegral $ BL.length $ buildProduceRequestMessage request
-    , apiKey = 0
-    , apiVersion = 0
-    , correlationId = 0
-    , clientIdLen = fromIntegral $ BS.length $ inputClientId iM
-    , clientId = inputClientId iM
+      reqSize = fromIntegral $ BL.length $ buildProduceRequestMessage request
+    , reqApiKey = 0
+    , reqApiVersion = 0
+    , reqCorrelationId = 0
+    , reqClientIdLen = fromIntegral $ BS.length $ inputClientId iM
+    , reqClientId = inputClientId iM
     , request = request
   }
   in
