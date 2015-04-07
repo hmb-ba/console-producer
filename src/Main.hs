@@ -3,8 +3,8 @@ module Main (
 ) where
 
 import Types
-import Network.Types
-import Network.Writer
+import Network.Types.Request
+import Network.Writer.Request
 
 import Network.Socket
 import System.IO
@@ -81,7 +81,7 @@ main = do
   putStrLn "Port eingeben"
   portInput <- getLine
   let port = read portInput :: Int -- todo
-  connect sock (SockAddrInet 9092 ip)
+  connect sock (SockAddrInet 4343  ip)
   putStrLn "ClientId eingeben"
   clientId <- getLine
   putStrLn "TopicName eingeben"
