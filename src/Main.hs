@@ -3,86 +3,23 @@ module Main (
 ) where
 
 import Types
+
 import HMB.Network
---import HMB.Network.Parser
---import HMB.Network.Writer.Request
 import HMB.Common
+import HMB.Client.Producer
 
 import Network.Socket
 import System.IO
 import Control.Monad
 import Data.IP
 import Data.Word
-import Data.Binary.Put
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as C
 
-import qualified Network.Socket.ByteString.Lazy as SockBL
-
-import Data.Digest.CRC32
-
-packRequest :: InputMessage -> RequestMessage
-packRequest iM = 
-  let payload = Payload {
-      keylen = 0
-    , magic = 0
-    , attr= 0
-    , payloadLen = fromIntegral $ BS.length $ inputData iM 
-    , payloadData = inputData iM
-  }
-  in
-  let message = Message { 
-      crc = crc32 $ buildPayload payload
-    , payload = payload
-  }
-  in
-  let messageSet = MessageSet {
-      offset = 0
-    , len = fromIntegral $ BL.length $ buildMessage message
-    , message = message
-  }
-  in
-  let partition = Partition {
-      partitionNumber = inputPartitionNumber iM
-    , messageSetSize = fromIntegral $ BL.length $ buildMessageSet messageSet
-    , messageSet = [messageSet]
-  }
-  in
-  let topic = Topic {
-      topicNameLen = fromIntegral $ BS.length $ inputTopicName iM
-    , topicName = inputTopicName iM
-    , numPartitions = fromIntegral $ length [partition]
-    , partitions = [partition]
-  }
-  in
-  let request = ProduceRequest {
-      reqRequiredAcks = 0
-    , reqTimeout = 1500
-    , reqNumTopics = fromIntegral $ length [topic]
-    , reqTopics = [topic]
-  }
-  in
-  let requestMessage = RequestMessage {
-      reqSize = fromIntegral $ (BL.length $ buildProduceRequestMessage request )
-          + 2 -- reqApiKey
-          + 2 -- reqApiVersion
-          + 4 -- correlationId 
-          + 2 -- clientIdLen
-          + (fromIntegral $ BS.length $ inputClientId iM) --clientId
-    , reqApiKey = 0
-    , reqApiVersion = 0
-    , reqCorrelationId = 0
-    , reqClientIdLen = fromIntegral $ BS.length $ inputClientId iM
-    , reqClientId = inputClientId iM
-    , request = request
-  }
-  in
-  requestMessage
-
+import qualified Network.Socket.ByteString.Lazy as SBL
 
 main = do
-
   -----------------
   -- Init Socket with user input
   -----------------
@@ -94,7 +31,6 @@ main = do
   putStrLn "Port eingeben"
   portInput <- getLine
   --let port = read portInput ::PortNumber  -- PortNumber does not derive from read
-  --print port
   connect sock (SockAddrInet 4343 ip)
   putStrLn "ClientId eingeben"
   clientId <- getLine
@@ -107,18 +43,14 @@ main = do
   forever $ do 
     putStrLn "Nachricht eingeben"
     inputMessage <- getLine
-
     let req = packRequest $ InputMessage (C.pack clientId) (C.pack topicName) (fromIntegral 0) (C.pack inputMessage)
     
-    writeRequest sock req
+    sendRequest sock req
 
     --------------------
     -- Receive Response
     --------------------
-    input <- SockBL.recv sock 4096
+    input <- SBL.recv sock 4096
     let i = input 
     response <- readProduceResponse $ i
     print response 
-    --  sClose sock
-
-
