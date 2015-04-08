@@ -16,18 +16,20 @@ import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as C
 
+import Data.Digest.CRC32
+
 packRequest :: InputMessage -> RequestMessage
 packRequest iM = 
   let payload = Payload {
       keylen = 0
-    , payloadLen = fromIntegral $ BS.length $ inputData iM
+    , magic = 0
+    , attr= 0
+    , payloadLen = fromIntegral $ BS.length $ inputData iM 
     , payloadData = inputData iM
   }
   in
   let message = Message { 
-      crc = 0
-    , magic = 0
-    , attr= 0
+      crc = crc32 $ buildPayload payload
     , payload = payload
   }
   in
@@ -58,7 +60,12 @@ packRequest iM =
   }
   in
   let requestMessage = RequestMessage {
-      reqSize = fromIntegral $ BL.length $ buildProduceRequestMessage request
+      reqSize = fromIntegral $ (BL.length $ buildProduceRequestMessage request )
+          + 2 -- reqApiKey
+          + 2 -- reqApiVersion
+          + 4 -- correlationId 
+          + 2 -- clientIdLen
+          + (fromIntegral $ BS.length $ inputClientId iM) --clientId
     , reqApiKey = 0
     , reqApiVersion = 0
     , reqCorrelationId = 0
@@ -78,8 +85,8 @@ main = do
   let ip = toHostAddress (read ipInput :: IPv4)
   putStrLn "Port eingeben"
   portInput <- getLine
-  let port = read portInput :: Int -- todo
-  connect sock (SockAddrInet 4343  ip)
+  let port =  PortNum $ read portInput -- todo
+  connect sock (SockAddrInet 9092 ip)
   putStrLn "ClientId eingeben"
   clientId <- getLine
   putStrLn "TopicName eingeben"
@@ -87,12 +94,9 @@ main = do
   forever $ do 
     putStrLn "Nachricht eingeben"
     inputMessage <- getLine
-    print "a"
-    let req = packRequest $ InputMessage (C.pack clientId) (C.pack topicName) (fromIntegral 1) (C.pack inputMessage)
+    let req = packRequest $ InputMessage (C.pack clientId) (C.pack topicName) (fromIntegral 0) (C.pack inputMessage)
+    print req
     writeRequest sock req
-    print "b"
-  --return()
---open connection
---get arguments
---transform to requestmessage
---send messages
+    sClose sock
+
+
