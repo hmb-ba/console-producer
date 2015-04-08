@@ -4,8 +4,6 @@ module Main (
 
 import Types
 
-import HMB.Protocol
-import HMB.Common
 import HMB.Client.Producer
 
 import Network.Socket
