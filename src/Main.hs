@@ -4,7 +4,7 @@ module Main (
 
 import Types
 
-import HMB.Client.Producer
+import Kafka.Client.Producer
 
 import Network.Socket
 import System.IO
