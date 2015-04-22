@@ -4,7 +4,7 @@ module Main (
 
 import Types
 
-import Kafka.Client.Producer
+import Kafka.Client
 
 import Network.Socket
 import System.IO
@@ -29,6 +29,7 @@ main = do
   putStrLn "Port eingeben"
   portInput <- getLine
   --let port = read portInput ::PortNumber  -- PortNumber does not derive from read
+  --connect sock (SockAddrInet 4343 ip)
   connect sock (SockAddrInet 4343 ip)
   putStrLn "ClientId eingeben"
   clientId <- getLine
@@ -41,14 +42,11 @@ main = do
   forever $ do 
     putStrLn "Nachricht eingeben"
     inputMessage <- getLine
-    let req = packRequest $ InputMessage (C.pack clientId) (C.pack topicName) (fromIntegral 0) (C.pack inputMessage)
-    
-    sendRequest sock req
+    sendRequest sock $ packPrRqMessage (clientId, topicName, 0, inputMessage)
 
     --------------------
     -- Receive Response
     --------------------
     input <- SBL.recv sock 4096
-    let i = input 
-    response <- readProduceResponse $ i
+    let response = decodePrResponse input
     print response 
