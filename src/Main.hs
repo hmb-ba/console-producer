@@ -23,17 +23,15 @@ main = do
   -----------------
   sock <- socket AF_INET Stream defaultProtocol 
   setSocketOption sock ReuseAddr 1
-  putStrLn "IP eingeben"
+  putStrLn "Give IP"
   ipInput <- getLine
   let ip = toHostAddress (read ipInput :: IPv4)
-  putStrLn "Port eingeben"
+  putStrLn "Give Port"
   portInput <- getLine
-  --let port = read portInput ::PortNumber  -- PortNumber does not derive from read
-  --connect sock (SockAddrInet 4343 ip)
   connect sock (SockAddrInet 4343 ip)
-  putStrLn "ClientId eingeben"
+  putStrLn "Give Client Id"
   clientId <- getLine
-  putStrLn "TopicName eingeben"
+  putStrLn "Give Topic Name"
   topicName <- getLine
 
   -------------------------
