@@ -23,16 +23,18 @@ main = do
   -----------------
   sock <- socket AF_INET Stream defaultProtocol 
   setSocketOption sock ReuseAddr 1
-  putStrLn "Give IP"
+  putStrLn "Give IP "
   ipInput <- getLine
   let ip = toHostAddress (read ipInput :: IPv4)
   putStrLn "Give Port"
   portInput <- getLine
-  connect sock (SockAddrInet 4343 ip)
+  connect sock (SockAddrInet 4343 ip) --TODO: Port Input 
   putStrLn "Give Client Id"
   clientId <- getLine
   putStrLn "Give Topic Name"
   topicName <- getLine
+  putStrLn "Give Partition Number"
+  partition <- getLine
 
   -------------------------
   -- Send / Receive Loop
@@ -40,7 +42,7 @@ main = do
   forever $ do 
     putStrLn "Nachricht eingeben"
     inputMessage <- getLine
-    sendRequest sock $ packPrRqMessage (clientId, topicName, 0, inputMessage)
+    sendRequest sock $ packPrRqMessage (clientId, topicName, (read partition ::Int), inputMessage)
 
     --------------------
     -- Receive Response
