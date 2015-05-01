@@ -31,6 +31,19 @@ main = do
   connect sock (SockAddrInet 4343 ip) --TODO: Port Input 
   putStrLn "Give Client Id"
   clientId <- getLine
+
+  -------------------
+  -- Get Metadata from known broker
+  ------------------
+  sendRequest sock $ encodeMdRequest (0, 0, clientId, [])
+  mdInput <- SBL.recv sock 4096
+  let mdRes = decodeMdResponse mdInput 
+  print "Brokers Metadata:"
+  print  mdRes
+
+  ---------------
+  -- Start Producing
+  --------------
   putStrLn "Give Topic Name"
   topicName <- getLine
   putStrLn "Give Partition Number"
