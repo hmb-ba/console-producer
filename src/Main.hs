@@ -55,7 +55,7 @@ main = do
   forever $ do 
     putStrLn "Nachricht eingeben"
     inputMessage <- getLine
-    sendRequest sock $ packPrRqMessage (clientId, topicName, (read partition ::Int), inputMessage)
+    sendRequest sock $ packPrRqMessage (C.pack $ clientId,C.pack $ topicName, (read partition ::Int), [C.pack $ inputMessage])
 
     --------------------
     -- Receive Response
