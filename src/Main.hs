@@ -30,14 +30,17 @@ main = do
   portInput <- getLine
   connect sock (SockAddrInet 4343 ip) --TODO: Port Input 
   putStrLn "Give Client Id"
-  clientId <- getLine
+  client <- getLine
+
+  let requestHeader = Head 0 0 (stringToClientId client)
 
   -------------------
   -- Get Metadata from known broker
   ------------------
-  sendRequest sock $ encodeMdRequest (0, 0, clientId, [])
+  let mdReq = Metadata requestHeader [] -- request Metadata for all topics
+  sendRequest sock $ (pack mdReq)
   mdInput <- SBL.recv sock 4096
-  let mdRes = decodeMdResponse mdInput 
+  let mdRes = decodeMdResponse mdInput
   print "Brokers Metadata:"
   print  mdRes
 
@@ -46,16 +49,19 @@ main = do
   --------------
   putStrLn "Give Topic Name"
   topicName <- getLine
+  let t = stringToTopic topicName
   putStrLn "Give Partition Number"
   partition <- getLine
+  let p = read partition :: Int
 
   -------------------------
   -- Send / Receive Loop
-  -------------------------
+   -------------------------
   forever $ do 
     putStrLn "Nachricht eingeben"
-    inputMessage <- getLine
-    sendRequest sock $ packPrRqMessage (C.pack $ clientId,C.pack $ topicName, (read partition ::Int), [C.pack $ inputMessage])
+    input <- getLine
+    let prReq = Produce requestHeader [ ToTopic t [ ToPart p [(stringToData input)]]]
+    sendRequest sock $ pack prReq
 
     --------------------
     -- Receive Response
