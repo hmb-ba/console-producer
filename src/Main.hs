@@ -2,18 +2,20 @@ module Main (
   main
 ) where
 
-import Types
+import qualified Data.ByteString.Lazy as BL
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as C
+
+import Control.Monad
+
+import Data.IP
+import Data.Word
 
 import Kafka.Client
 
 import Network.Socket
+
 import System.IO
-import Control.Monad
-import Data.IP
-import Data.Word
-import qualified Data.ByteString.Lazy as BL
-import qualified Data.ByteString as BS
-import qualified Data.ByteString.Char8 as C
 
 import qualified Network.Socket.ByteString.Lazy as SBL
 
@@ -38,7 +40,7 @@ main = do
   -- Get Metadata from known broker
   ------------------
   let mdReq = Metadata requestHeader [] -- request Metadata for all topics
-  sendRequest sock $ (pack mdReq)
+  sendRequest sock mdReq
   mdInput <- SBL.recv sock 4096
   let mdRes = decodeMdResponse mdInput
   print "Brokers Metadata:"
@@ -61,7 +63,7 @@ main = do
     putStrLn "Nachricht eingeben"
     input <- getLine
     let prReq = Produce requestHeader [ ToTopic t [ ToPart p [(stringToData input)]]]
-    sendRequest sock $ pack prReq
+    sendRequest sock $ prReq
 
     --------------------
     -- Receive Response
