@@ -12,6 +12,7 @@ import Data.IP
 import Data.Word
 
 import Kafka.Client
+import Kafka.Protocol
 
 import Network.Socket
 
@@ -23,14 +24,14 @@ main = do
   -----------------
   -- Init Socket with user input
   -----------------
-  sock <- socket AF_INET Stream defaultProtocol 
+  sock <- socket AF_INET Stream defaultProtocol
   setSocketOption sock ReuseAddr 1
   putStrLn "Give IP "
   ipInput <- getLine
   let ip = toHostAddress (read ipInput :: IPv4)
   putStrLn "Give Port"
   portInput <- getLine
-  connect sock (SockAddrInet 4343 ip) --TODO: Port Input 
+  connect sock (SockAddrInet 4343 ip) --TODO: Port Input
   putStrLn "Give Client Id"
   client <- getLine
 
@@ -43,8 +44,16 @@ main = do
   sendRequest sock mdReq
   mdInput <- SBL.recv sock 4096
   let mdRes = decodeMdResponse mdInput
-  print "Brokers Metadata:"
-  print  mdRes
+  putStrLn "-----------------------------------------"
+  putStrLn "Brokers Metadata:"
+  let metaBroker = rsMdBrokers $ rsResponses mdRes
+  putStrLn $ "Node: " ++ (show $ map rsMdNodeId metaBroker)
+  putStrLn $ "Host: " ++ (show $ map rsMdHost metaBroker)
+  putStrLn $ "Port: " ++ (show $ map rsMdPort metaBroker)
+  let metaTopics = rsMdTopicMetadata $ rsResponses mdRes
+  putStrLn $ "Available Topics: " ++ show (map rsMdTopicName metaTopics)
+  putStrLn $ "Partitions: " ++ (show $ map (map (rsMdPartitionId)) (map (rsMdPartitionMd) metaTopics ))
+  putStrLn "-----------------------------------------"
 
   ---------------
   -- Start Producing
@@ -59,7 +68,7 @@ main = do
   -------------------------
   -- Send / Receive Loop
    -------------------------
-  forever $ do 
+  forever $ do
     putStrLn "Nachricht eingeben"
     input <- getLine
     let prReq = Produce requestHeader [ ToTopic t [ ToPart p [(stringToData input)]]]
@@ -70,4 +79,4 @@ main = do
     --------------------
     input <- SBL.recv sock 4096
     let response = decodePrResponse input
-    print response 
+    putStrLn $ "Broker has received"
